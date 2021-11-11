@@ -16,7 +16,8 @@ requirements = [
     "cvxopt",
     "pymanopt",
     "autograd",
-    "requests"
+    "requests",
+    "jupyter"
 ]
 
 setup(
