@@ -127,7 +127,7 @@ class ArgsDict(object):
         for key in args_dict:
             setattr(self, key, args_dict[key])
 
-def load_model(model_name):
+def load_model(model_name, loc):
     model_locations = {
         'CIFAR_ResNet18': 'models/model_Resnet18-nm_None-dataset_cifar10-epoch_150.ckpt',
         'CIFAR_VOneResNet18': 'models/model_VOneResnet18-nm_gn-nl_0.07-dataset_cifar10-epoch_150.ckpt',
@@ -135,7 +135,8 @@ def load_model(model_name):
         # coming soon
         #'CIFAR_ATResNet18': 'models/model_Resnet18-AT_linf-eps_8-dataset_cifar10-epoch_150.ckpt'
     }
-    return torch.load(model_locations[model_name])
+
+    return torch.load(model_locations[model_name], map_location=loc)
 
 def art_wrap_model(
     model,
