@@ -13,6 +13,14 @@ Stay tuned for more notebooks, showing how to generate VOneResNet18 with Gaussia
 
 ## Installation
 
+Code is tested using Python 3.7.11. 
+
+If using conda, create a conda environment and activate with: 
+```
+conda create -n adv_manifolds python=3.7
+conda activate adv_manifolds
+```
+
 Install the requirements and package using: 
 ```
 pip install -e .

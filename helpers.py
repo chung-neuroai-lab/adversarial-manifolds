@@ -140,6 +140,7 @@ def load_model(model_name, loc):
 
 def art_wrap_model(
     model,
+    device_type='gpu',
     mean=[0.5, 0.5, 0.5],
     std=[0.5, 0.5, 0.5],
     input_shape=(3, 32, 32),
@@ -163,6 +164,7 @@ def art_wrap_model(
         optimizer=optimizer,
         input_shape=input_shape,
         nb_classes=nb_classes,
+        device_type=device_type,
     )
 
 def accuracy(Y, Y_hat):
