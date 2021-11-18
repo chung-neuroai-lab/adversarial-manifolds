@@ -99,8 +99,8 @@ def MFTMA_analyze_adversarial_representations(args):
     Y_hat = model(torch.tensor(X_adv))
 
     # put activations and pixels into a dictionary with layer names
-    features_dict = {layer_name: hook.activations for layer_name, hook in hooks.items()}
-    features_dict['0.pixels'] = X_adv
+    features_dict = {'0.pixels' : X_adv}
+    features_dict.update({layer_name: hook.activations for layer_name, hook in hooks.items()})
     
     # run MFTMA analysis on the features
     df = pd.concat([
@@ -114,6 +114,8 @@ def MFTMA_analyze_adversarial_representations(args):
     df['eps'] = eps
     df['eps_step'] = eps_step
     df['max_iter'] = max_iter
+    df['clean_accuracy'] = clean_accuracy
+    df['adv_accuracy'] = adv_accuracy
     df['random'] = random
     
     # store the results
