@@ -16,23 +16,24 @@ class Wrapper(Module):
         self.module = model
 
 
-def get_model(model_arch=None, pretrained=True, map_location='cpu', **kwargs):
+def get_model(model_arch=None, pretrained=True, map_location='cpu', weightsdir_path=None, **kwargs):
     """
     Returns a VOneNet model.
     Select pretrained=True for returning one of the 3 pretrained models.
     model_arch: string with identifier to choose the architecture of the back-end (resnet50, cornets, alexnet)
     """
     if pretrained:
-        url = f'https://vonenet-models.s3.us-east-2.amazonaws.com/{FILE_WEIGHTS[model_arch.lower()]}'
-        home_dir = os.environ['HOME']
-        vonenet_dir = os.path.join(home_dir, '.vonenet')
-        weightsdir_path = os.path.join(vonenet_dir, FILE_WEIGHTS[model_arch.lower()])
-        if not os.path.exists(vonenet_dir):
-            os.makedirs(vonenet_dir)
-        if not os.path.exists(weightsdir_path):
-            print('Downloading model weights to ', weightsdir_path)
-            r = requests.get(url, allow_redirects=True)
-            open(weightsdir_path, 'wb').write(r.content)
+        if weightsdir_path is None:
+            url = f'https://vonenet-models.s3.us-east-2.amazonaws.com/{FILE_WEIGHTS[model_arch.lower()]}'
+            home_dir = os.environ['HOME']
+            vonenet_dir = os.path.join(home_dir, '.vonenet')
+            weightsdir_path = os.path.join(vonenet_dir, FILE_WEIGHTS[model_arch.lower()])
+            if not os.path.exists(vonenet_dir):
+                os.makedirs(vonenet_dir)
+            if not os.path.exists(weightsdir_path):
+                print('Downloading model weights to ', weightsdir_path)
+                r = requests.get(url, allow_redirects=True)
+                open(weightsdir_path, 'wb').write(r.content)
 
         ckpt_data = torch.load(weightsdir_path, map_location=map_location)
 
@@ -54,12 +55,15 @@ def get_model(model_arch=None, pretrained=True, map_location='cpu', **kwargs):
                                       simple_channels=simple_channels, complex_channels=complex_channels,
                                       noise_mode=noise_mode, noise_scale=noise_scale, noise_level=noise_level)
 
-        if model_arch.lower() == 'resnet50_at':
-            ckpt_data['state_dict'].pop('vone_block.div_u.weight')
-            ckpt_data['state_dict'].pop('vone_block.div_t.weight')
-            model.load_state_dict(ckpt_data['state_dict'])
-        else:
+        try:
+            # usually this is successful, but some versions have an extra couple keys hanging out..
             model = Wrapper(model)
+            model.load_state_dict(ckpt_data['state_dict'])
+            model = model.module
+        except:
+            # if it fails, pop the problem keys and try again.
+            ckpt_data['state_dict'].pop('module.vone_block.div_u.weight')
+            ckpt_data['state_dict'].pop('module.vone_block.div_t.weight')
             model.load_state_dict(ckpt_data['state_dict'])
             model = model.module
 
