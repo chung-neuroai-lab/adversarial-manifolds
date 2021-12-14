@@ -103,7 +103,10 @@ class VOneBlock(nn.Module):
             x -= self.noise_level
             x /= self.noise_scale
         elif self.noise_mode == 'gaussian':
-            x += torch.distributions.normal.Normal(torch.zeros_like(x), scale=self.noise_level).rsample()
+            if self.fixed_noise is not None:
+                x += self.fixed_noise
+            else:
+                x += torch.distributions.normal.Normal(torch.zeros_like(x), scale=self.noise_level).rsample()
         return self.noise(x)
 
     def set_noise_mode(self, noise_mode=None, noise_scale=1, noise_level=1):
@@ -115,8 +118,8 @@ class VOneBlock(nn.Module):
         noise_mean = torch.zeros(batch_size, self.out_channels, int(self.input_size/self.stride), int(self.input_size/self.stride))
         if seed:
             torch.manual_seed(seed)
-        if self.noise_mode == 'neuronal':
-            self.fixed_noise = torch.distributions.normal.Normal(noise_mean, scale=1).rsample().to(device)
+        
+        self.fixed_noise = torch.distributions.normal.Normal(noise_mean, scale=1).rsample().to(device)
 
     def unfix_noise(self):
         self.fixed_noise = None
